@@ -257,7 +257,7 @@ Argument id specifies content. Argument fmt = 0 for Braille, 1
                  nil shell-command-switch
                  command)
    (goto-char (point-min))
-   (xml-parse-region (point-min) (point-max))))
+   (libxml-parse-xml-region (point-min) (point-max))))
 (defvar emacspeak-bookshare-last-action-uri nil
   "Cache last API call URI.")
 
@@ -319,12 +319,14 @@ Optional argument 'no-auth says we dont need a user auth."
   "Cached list of categories.")
 
 ;;;temporary definition
-(defun xml-tag-child (tag name)
-  "Return the first child matching NAME, of an xml-parse'd XML TAG."
+(defun xml-node-child (node name)
+  "Return the first child matching NAME, of an xml-parse'd XML node."
   (catch 'found
-    (let ((children (xml-node-children tag)))
+    (let ((children (xml-node-children node)))
       (while children
-        (if (string-equal name (xml-node-name (car children)))
+        (if  
+            (and (listp (car children))
+                 (equal name (xml-node-name (car children))))
             (throw 'found (car children)))
         (setq children (cdr children))))))
 
