@@ -61,6 +61,7 @@
 (require 'emacspeak-webutils)
 (require 'emacspeak-xslt)
 (require 'dom) ; Emacs 25
+(require 'xml)
 (require 'derived)
 ;;}}}
 ;;{{{ Customizations
@@ -743,22 +744,22 @@ b Browse
   "Handle metadata element."
   (declare (special emacspeak-bookshare-metadata-filtered-elements))
   (let* ((children (dom-children metadata))
-       (available
-        (remove-if-not
-         #'(lambda (c)
-             (eq dom-tagc)  'download-format))
-         children))
-       (display
-        (remove-if
-         #'(lambda (c)
-             (member (dom-tag c) emacspeak-bookshare-metadata-filtered-elements))
-         children)))
+         (available
+          (remove-if-not
+           #'(lambda (c)
+               (eq dom-tag c)  'download-format)
+          children))
+         (display
+          (remove-if
+           #'(lambda (c)
+               (member (dom-tag c) emacspeak-bookshare-metadata-filtered-elements))
+           children)))
     (mapc
      #'(lambda (child)
          (let ((start (point)))
            (insert
             (format "%s: "
-                           (capitalize (symbol-name (dom-tag child)))))
+                    (capitalize (symbol-name (dom-tag child)))))
            (put-text-property start (point)
                               'face 'highlight)
            (insert
@@ -773,7 +774,7 @@ b Browse
           (string-lessp (symbol-name (car a)) (symbol-name (car b))))))
     (insert
      (format "Available: %s"
-             (mapconcat #'dom-text available " "))))
+             (mapconcat #'dom-text available " ")))))
 
 ;;}}}
 ;;{{{  Property Accessors:
