@@ -60,8 +60,7 @@
 (require 'emacspeak-we)
 (require 'emacspeak-webutils)
 (require 'emacspeak-xslt)
-
-(require 'xml)
+(require 'dom) ; Emacs 25
 (require 'derived)
 ;;}}}
 ;;{{{ Customizations
@@ -320,16 +319,7 @@ Optional argument 'no-auth says we dont need a user auth."
   "Cached list of categories.")
 
 ;;;temporary definition
-(defun xml-node-child (node name)
-  "Return the first child matching NAME, of an xml-parse'd XML node."
-  (catch 'found
-    (let ((children (xml-node-children node)))
-      (while children
-        (if  
-            (and (listp (car children))
-                 (equal name (xml-node-name (car children))))
-            (throw 'found (car children)))
-        (setq children (cdr children))))))
+
 
 ;;;todo: Update xml-tag* calls 
 (defun emacspeak-bookshare-categories ()
@@ -340,18 +330,13 @@ Optional argument 'no-auth says we dont need a user auth."
    (setq
     emacspeak-bookshare-categories
     (let ((result
-           (emacspeak-bookshare-api-call
-            "reference/category/list" "" 'no-auth)))
-      (setq result (xml-node-child result  "category"))
-      (setq result (xml-node-child result "list"))
-      (setq result (xml-node-children result))
-      (setq result
-            (remove-if-not
-             #'(lambda (c) (string= "result" (xml-node-name c)))
-             result))
-      (loop for r in result
-            collect
-            (emacspeak-url-encode(cadr (second r))))))))
+           (dom-by-tag 
+            (emacspeak-bookshare-api-call "reference/category/list" "" 'no-auth)
+            'result)))
+      (loop
+       for r in result collect
+       (emacspeak-url-encode (dom-text (dom-by-tag r  'name))))))))
+
 ;;;  Following actions return book metadata:
 
 (defsubst emacspeak-bookshare-isbn-search (query)
