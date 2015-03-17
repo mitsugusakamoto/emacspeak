@@ -341,8 +341,8 @@ Optional argument 'no-auth says we dont need a user auth."
     (let ((result
            (emacspeak-bookshare-api-call
             "reference/category/list" "" 'no-auth)))
-      (setq result (xml-tag-child result  "category"))
-      (setq result (xml-tag-child result "list"))
+      (setq result (xml-node-child result  "category"))
+      (setq result (xml-node-child result "list"))
       (setq result (xml-node-children result))
       (setq result
             (remove-if-not
@@ -672,7 +672,7 @@ b Browse
   "Handle messages element."
   (declare (special emacspeak-bookshare-last-action-uri))
   (let ((start (point)))
-    (mapc #'insert(rest  (xml-tag-child messages "string")))
+    (mapc #'insert(rest  (xml-node-child messages "string")))
     (insert "\t")
     (insert
      (mapconcat
