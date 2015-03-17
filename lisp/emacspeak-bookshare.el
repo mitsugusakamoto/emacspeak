@@ -240,8 +240,8 @@ Argument id specifies content. Argument fmt = 0 for Braille, 1
   "Evaluate forms in a  ready to use temporary buffer."
   `(let ((buffer (get-buffer-create emacspeak-bookshare-scratch-buffer))
          (default-process-coding-system (cons 'utf-8 'utf-8))
-         (coding-system-for-read 'binary)
-         (coding-system-for-write 'binary)
+         ;(coding-system-for-read 'binary)
+         ;(coding-system-for-write 'binary)
          (buffer-undo-list t))
      (save-current-buffer
        (set-buffer buffer)
@@ -258,6 +258,7 @@ Argument id specifies content. Argument fmt = 0 for Braille, 1
                  command)
    (goto-char (point-min))
    (libxml-parse-xml-region (point-min) (point-max))))
+
 (defvar emacspeak-bookshare-last-action-uri nil
   "Cache last API call URI.")
 
