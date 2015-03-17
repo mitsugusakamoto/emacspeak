@@ -116,7 +116,7 @@ This is used by the various Bookshare view commands to display
   :group 'emacspeak-bookshare)
 
 ;;}}}
-;;{{{ XML Compatibility:
+;;{{{ XML helper:
 
 ;;; cloned from xml.el in emacs 24
 (defun xml-substitute-numeric-entities (string)
@@ -467,6 +467,7 @@ Optional interactive prefix arg prompts for a category to use as a filter."
 
 ;;}}}
 ;;{{{ Downloading Content:
+
 (defsubst emacspeak-bookshare-download-internal(url target)
   "Download content  to target location."
   (interactive)
@@ -492,9 +493,6 @@ Optional interactive prefix arg prompts for a category to use as a filter."
   (emacspeak-bookshare-download-internal
    (emacspeak-bookshare-download-url id 0)
    target))
-
-;;}}}
-;;{{{ Downloading Content:
 
 ;;}}}
 ;;{{{ Actions Table:
@@ -725,8 +723,8 @@ b Browse
   "Elements in Bookshare Metadata that we filter.")
 
 (defvar emacspeak-bookshare-leaf-elements
-  (list "string" "downloads-remaining"
-        "id" "name" "value" "editable")
+  '(string downloads-remaining
+        id name value editable)
   "Leaf level elements, just print element name: children.")
 
 (loop for e in
@@ -734,7 +732,7 @@ b Browse
       do
       (eval
        `(defun
-            ,(intern (format "emacspeak-bookshare-%s-handler" e))
+            ,(intern (format "emacspeak-bookshare-%s-handler" (symbol-name e)))
             (element)
           ,(format "Handle leaf-level element  %s. " e)
           (insert (format "%s:\t" ,e))
@@ -744,40 +742,38 @@ b Browse
 (defun emacspeak-bookshare-metadata-handler (metadata)
   "Handle metadata element."
   (declare (special emacspeak-bookshare-metadata-filtered-elements))
-  (let*
-      ((children (xml-node-children metadata))
+  (let* ((children (dom-children metadata))
        (available
         (remove-if-not
          #'(lambda (c)
-             (string= (car c) "download-format"))
+             (eq dom-tagc)  'download-format))
          children))
        (display
         (remove-if
          #'(lambda (c)
-             (member (car  c) emacspeak-bookshare-metadata-filtered-elements))
+             (member (dom-tag c) emacspeak-bookshare-metadata-filtered-elements))
          children)))
     (mapc
      #'(lambda (child)
          (let ((start (point)))
-           (insert (format "%s: "
-                           (capitalize (first child))))
+           (insert
+            (format "%s: "
+                           (capitalize (symbol-name (dom-tag child)))))
            (put-text-property start (point)
                               'face 'highlight)
            (insert
             (format "%s\n"
                     (xml-substitute-special
                      (xml-substitute-numeric-entities
-                      (second child)))))
+                      (dom-text child)))))
            (fill-region-as-paragraph start (point))))
      (sort
       display
-      #'(lambda (a b ) (string-lessp (car a) (car b)))))
+      #'(lambda (a b )
+          (string-lessp (symbol-name (car a)) (symbol-name (car b))))))
     (insert
      (format "Available: %s"
-             (mapconcat
-              #'(lambda (a) (second a))
-              available
-              " ")))))
+             (mapconcat #'dom-text available " "))))
 
 ;;}}}
 ;;{{{  Property Accessors:
