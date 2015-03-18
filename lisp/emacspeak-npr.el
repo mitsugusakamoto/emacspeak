@@ -57,7 +57,7 @@
 (declaim  (optimize  (safety 0) (speed 3)))
 (require 'emacspeak-preamble)
 (require 'emacspeak-webutils)
-(require 'xml-parse)
+(require 'dom)
 (require 'xml)
 
 ;;}}}
@@ -114,23 +114,12 @@
   "Evaluate forms in a  ready to use temporary buffer."
   `(let ((buffer (get-buffer-create emacspeak-npr-scratch-buffer))
          (default-process-coding-system (cons 'utf-8 'utf-8))
-         (coding-system-for-read 'binary)
-         (coding-system-for-write 'binary)
          (buffer-undo-list t))
      (save-excursion
        (set-buffer buffer)
        (kill-all-local-variables)
        (erase-buffer)
        (progn ,@body))))
-
-(defsubst emacspeak-npr-get-xml (command)
-  "Run command and return its output."
-  (declare (special shell-file-name shell-command-switch))
-  (emacspeak-npr-using-scratch
-   (call-process shell-file-name nil t
-                 nil shell-command-switch
-                 command)
-   (buffer-string)))
 
 (defsubst emacspeak-npr-get-result (command)
   "Run command and return its parsed XML output."
@@ -139,8 +128,7 @@
    (call-process shell-file-name nil t
                  nil shell-command-switch
                  command)
-   (goto-char (point-min))
-   (read-xml)))
+   (libxml-parse-xml-region (point-min) (point-max))))
 
 (defvar emacspeak-npr-last-action-uri nil
   "Cache last API call URI.")
@@ -161,9 +149,8 @@
   "View results as Atom."
   (interactive "sOperation:\nsOperands")
   (let* ((url
-          (emacspeak-npr-rest-endpoint
-           operation
-           (format "%s&output=atom" operand))))
+          (emacspeak-npr-rest-endpoint 
+           operation (format "%s&output=atom" operand))))
     (emacspeak-webutils-autospeak)
     (emacspeak-feeds-atom-display url)))
 
